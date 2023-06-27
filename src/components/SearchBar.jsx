@@ -8,26 +8,29 @@ const SearchBar = () => {
   const [selectedOption, setSelectedOption] = useState("all")
   const [selectedPrice, setSelectedPrice] = useState("all")
   const [items, setItems] = useState()
-  const [openCategory, setOpenCategory] = useState(false)
+  const [openCategory, setOpenCategory] = useState(true)
   const [toggleSearch, setToggleSearch] = useState(false)
-  const [searchItem, setSearchitem] = useState("")
+  const [searchItem, setSearchItem] = useState("")
 
   const fetchData = async () => {
     let res = await fetch("https://fakestoreapi.com/products")
     let data = await res.json()
     setItems(data)
-    console.log(data)
   }
 
   useEffect(() => {
     fetchData()
-  }, [filteredItems])
+  }, [])
 
   const handleFilter = () => {
-    let filter = items.filter((item) => {
-      if (selectedOption === "all") {
+    let filter = items?.filter((item) => {
+      if (selectedOption === "all" && selectedPrice === "all") {
         return item
-      } else if (selectedOption === item.category) {
+      } else if (
+        (selectedOption === item.category && item.price < selectedPrice) ||
+        (selectedOption === "all" && item.price < selectedPrice) ||
+        (selectedOption === item.category && selectedPrice === "all")
+      ) {
         return true
       } else {
         return false
@@ -35,27 +38,47 @@ const SearchBar = () => {
     })
     setFilteredItems(filter)
   }
-  const handlePrice = () => {
-    let filter = items.filter((item) => {
-      if (selectedPrice === "all") {
-        return item
-      } else if (selectedPrice === item.price) {
-        return true
-      } else {
-        return false
-      }
-    })
-    setFilteredItems(filter)
-  }
+  useEffect(() => {
+    handleFilter()
+  }, [selectedOption, selectedPrice])
 
+  const handleOption = (e) => {
+    setSelectedOption(e.target.value)
+  }
+  const handlePriceOption = (e) => {
+    setSelectedPrice(e.target.value)
+  }
+  console.log(filteredItems)
+
+  const handleSearchItem = (e) => {
+    setSearchItem(e.target.value)
+    // console.log(e.target.value)
+    handleSearch()
+  }
   const handleSearch = () => {
+    // let filter = items.filter((item) => {
+    //   if (searchItem === "") {
+    //     return item
+    //   } else if (searchItem === item.title) {
+    //     return true
+    //   } else {
+    //     return false
+    //   }
+    // })
     let filter = items.filter((item) => {
-      if (searchItem === null) {
-        return item
-      } else if (searchItem === item.title) {
-        return true
-      } else {
-        return false
+      // if (searchItem === "") {
+      //   return item
+      // } else if (searchItem.length <= item.title.length) {
+      //   let i = 1
+      //   while (searchItem[i] === item.title[i]) {
+      //     i++
+      //   }
+      //   return true
+      // } else {
+      //   return false
+      // }
+      if (searchItem) {
+        return item.title.toLowerCase().includes(searchItem.toLowerCase())
       }
     })
     setFilteredItems(filter)
@@ -87,7 +110,7 @@ const SearchBar = () => {
             } px-2 py-1 outline-none`}
             type="search"
             onClick={() => setToggleSearch(true)}
-            onChange={(e) => setSearchitem(e.target.value)}
+            onChange={handleSearchItem}
           />
         </div>
         <div className="flex flex-col">
@@ -109,59 +132,27 @@ const SearchBar = () => {
           {openCategory && (
             <div className="flex flex-row gap-4">
               <div className="border-2 rounded-lg p-3">
-                <select className="outline-none">
-                  <option
-                    onClick={() => setSelectedOption("all")}
-                    default
-                    selected>
-                    Category
-                  </option>
-                  <option onClick={(e) => setSelectedOption(e.target.value)}>
-                    Men&apos;s Clothing
-                  </option>
-                  <option onClick={(e) => setSelectedOption(e.target.value)}>
-                    Jewelery
-                  </option>
-                  <option onClick={(e) => setSelectedOption(e.target.value)}>
-                    Electronics
-                  </option>
-                  <option onClick={(e) => setSelectedOption(e.target.value)}>
+                <select className="outline-none" onChange={handleOption}>
+                  <option value="all">Category</option>
+                  <option value="men's clothing">Men&apos;s Clothing</option>
+                  <option value="jewelery">Jewelery</option>
+                  <option value="electronics">Electronics</option>
+                  <option value="women's clothing">
                     Women&apos;s Clothing
                   </option>
                 </select>
               </div>
               <div className="border-2 rounded-lg p-3">
-                <select className="outline-none">
-                  <option
-                    onClick={(e) => setSelectedPrice("all")}
-                    default
-                    selected>
-                    Price
-                  </option>
-                  <option onClick={() => setSelectedPrice(20)}>
-                    less than $20
-                  </option>
-                  <option onClick={() => setSelectedPrice(50)}>
-                    less than $50
-                  </option>
-                  <option onClick={() => setSelectedPrice(100)}>
-                    less than $100
-                  </option>
-                  <option onClick={() => setSelectedPrice(200)}>
-                    less than $200
-                  </option>
-                  <option onClick={() => setSelectedPrice(500)}>
-                    less than $500
-                  </option>
-                  <option onClick={() => setSelectedPrice(700)}>
-                    less than $700
-                  </option>
-                  <option onClick={() => setSelectedPrice(1000)}>
-                    less than $1000
-                  </option>
-                  <option onClick={() => setSelectedPrice(5000)}>
-                    less than $5000
-                  </option>
+                <select className="outline-none" onChange={handlePriceOption}>
+                  <option value="all">Price</option>
+                  <option value="20">less than $20</option>
+                  <option value="50">less than $50</option>
+                  <option value="100">less than $100</option>
+                  <option value="200">less than $200</option>
+                  <option value="500">less than $500</option>
+                  <option value="700">less than $700</option>
+                  <option value="1000">less than $1000</option>
+                  <option value="5000">less than $5000</option>
                 </select>
               </div>
             </div>
